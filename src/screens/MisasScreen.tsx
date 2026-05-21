@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, radius } from '../constants/theme';
 import { horariosOrdinarios, contacto } from '../data/misas';
+import { getMisas, MisasData } from '../services/firestoreService';
 
 function FilaHorario({ dia, horarios, nota }: { dia: string; horarios: string[]; nota?: string }) {
   const esDomingo = dia === 'Domingo';
@@ -25,17 +26,26 @@ function FilaHorario({ dia, horarios, nota }: { dia: string; horarios: string[];
 }
 
 export default function MisasScreen() {
+  const [data, setData] = useState<MisasData>({
+    ordinarios: horariosOrdinarios,
+    contacto,
+  });
+
+  useEffect(() => {
+    getMisas().then(setData);
+  }, []);
+
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
 
-      {/* Misas semanales */}
+      {/* Horarios de Misa */}
       <View style={styles.seccion}>
         <View style={styles.seccionHeader}>
           <Ionicons name="people-outline" size={20} color={colors.primary} />
           <Text style={styles.seccionTitulo}>Horarios de Misa</Text>
         </View>
         <View style={styles.card}>
-          {horariosOrdinarios.map((h) => (
+          {data.ordinarios.map((h) => (
             <FilaHorario key={h.dia} dia={h.dia} horarios={h.horarios} nota={h.nota} />
           ))}
         </View>
@@ -64,17 +74,17 @@ export default function MisasScreen() {
         <View style={styles.card}>
           <View style={styles.filaContacto}>
             <Ionicons name="location-outline" size={18} color={colors.textMuted} />
-            <Text style={styles.contactoTexto}>{contacto.direccion}</Text>
+            <Text style={styles.contactoTexto}>{data.contacto.direccion}</Text>
           </View>
           <View style={styles.filaContacto}>
             <Ionicons name="logo-instagram" size={18} color={colors.textMuted} />
-            <Text style={styles.contactoTexto}>{contacto.instagram}</Text>
+            <Text style={styles.contactoTexto}>{data.contacto.instagram}</Text>
           </View>
           <View style={[styles.filaContacto, { borderBottomWidth: 0 }]}>
             <Ionicons name="business-outline" size={18} color={colors.textMuted} />
             <View>
               <Text style={styles.contactoLabel}>Secretaría</Text>
-              <Text style={styles.contactoTexto}>{contacto.horarioSecretaria}</Text>
+              <Text style={styles.contactoTexto}>{data.contacto.horarioSecretaria}</Text>
             </View>
           </View>
         </View>
@@ -86,25 +96,10 @@ export default function MisasScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  seccion: {
-    marginTop: spacing.lg,
-    paddingHorizontal: spacing.md,
-  },
-  seccionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    marginBottom: spacing.md,
-  },
-  seccionTitulo: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: colors.textPrimary,
-  },
+  container: { flex: 1, backgroundColor: colors.background },
+  seccion: { marginTop: spacing.lg, paddingHorizontal: spacing.md },
+  seccionHeader: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.md },
+  seccionTitulo: { fontSize: 16, fontWeight: '700', color: colors.textPrimary },
   card: {
     backgroundColor: colors.surface,
     borderRadius: radius.md,
@@ -115,29 +110,11 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
-  filaHorario: {
-    padding: spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  filaDestacada: {
-    backgroundColor: colors.primary + '08',
-  },
-  filaDia: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    marginBottom: spacing.sm,
-  },
-  diaNombre: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: colors.textSecondary,
-  },
-  diaDestacado: {
-    color: colors.primary,
-    fontWeight: '700',
-  },
+  filaHorario: { padding: spacing.md, borderBottomWidth: 1, borderBottomColor: colors.border },
+  filaDestacada: { backgroundColor: colors.primary + '08' },
+  filaDia: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.sm },
+  diaNombre: { fontSize: 15, fontWeight: '600', color: colors.textSecondary },
+  diaDestacado: { color: colors.primary, fontWeight: '700' },
   badgePrincipal: {
     backgroundColor: colors.primary + '20',
     color: colors.primary,
@@ -148,11 +125,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     overflow: 'hidden',
   },
-  filaHorarios: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.xs,
-  },
+  filaHorarios: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs },
   horarioBadge: {
     backgroundColor: colors.surfaceAlt,
     paddingHorizontal: spacing.sm,
@@ -161,28 +134,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
   },
-  horarioTexto: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: colors.textPrimary,
-  },
-  notaTexto: {
-    marginTop: spacing.sm,
-    fontSize: 12,
-    color: colors.textMuted,
-    fontStyle: 'italic',
-  },
-  confFila: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-    padding: spacing.md,
-  },
-  confTexto: {
-    fontSize: 15,
-    color: colors.textPrimary,
-    fontStyle: 'italic',
-  },
+  horarioTexto: { fontSize: 14, fontWeight: '700', color: colors.textPrimary },
+  notaTexto: { marginTop: spacing.sm, fontSize: 12, color: colors.textMuted, fontStyle: 'italic' },
+  confFila: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.md },
+  confTexto: { fontSize: 15, color: colors.textPrimary, fontStyle: 'italic' },
   filaContacto: {
     flexDirection: 'row',
     gap: spacing.md,
@@ -191,13 +146,6 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.border,
     alignItems: 'flex-start',
   },
-  contactoLabel: {
-    fontSize: 12,
-    color: colors.textMuted,
-    marginBottom: 1,
-  },
-  contactoTexto: {
-    fontSize: 14,
-    color: colors.textPrimary,
-  },
+  contactoLabel: { fontSize: 12, color: colors.textMuted, marginBottom: 1 },
+  contactoTexto: { fontSize: 14, color: colors.textPrimary },
 });

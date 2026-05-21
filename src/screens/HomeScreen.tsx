@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -11,6 +11,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { colors, spacing, radius } from '../constants/theme';
 import { eventos } from '../data/eventos';
+import { getEventos } from '../services/firestoreService';
+import { Evento } from '../data/eventos';
 
 const DIAS_ES = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
 const MESES_ES = [
@@ -22,13 +24,6 @@ function formatearFecha(fecha: Date): string {
   return `${DIAS_ES[fecha.getDay()]}, ${fecha.getDate()} de ${MESES_ES[fecha.getMonth()]} de ${fecha.getFullYear()}`;
 }
 
-function getProximoEvento() {
-  const hoy = new Date();
-  hoy.setHours(0, 0, 0, 0);
-  return eventos
-    .filter((e) => new Date(e.fecha + 'T00:00:00') >= hoy)
-    .sort((a, b) => a.fecha.localeCompare(b.fecha))[0];
-}
 
 interface AccesoCardProps {
   icono: keyof typeof Ionicons.glyphMap;
@@ -53,7 +48,15 @@ function AccesoCard({ icono, titulo, subtitulo, color, onPress }: AccesoCardProp
 export default function HomeScreen() {
   const navigation = useNavigation<any>();
   const hoy = new Date();
-  const proximoEvento = getProximoEvento();
+  const [listaEventos, setListaEventos] = useState<Evento[]>(eventos);
+
+  useEffect(() => {
+    getEventos().then(setListaEventos);
+  }, []);
+
+  const proximoEvento = listaEventos
+    .filter(e => new Date(e.fecha + 'T00:00:00') >= new Date(new Date().setHours(0,0,0,0)))
+    .sort((a, b) => a.fecha.localeCompare(b.fecha))[0];
 
   const diasHastaEvento = proximoEvento
     ? Math.round(
