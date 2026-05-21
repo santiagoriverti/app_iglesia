@@ -1,8 +1,6 @@
 import { initializeApp, getApps } from 'firebase/app';
-import { getFirestore } from 'firebase/firestore';
+import { getFirestore, Firestore } from 'firebase/firestore';
 
-// Pegá acá la configuración de tu proyecto Firebase
-// (console.firebase.google.com → tu proyecto → Configuración → SDK de Firebase)
 const firebaseConfig = {
   apiKey: 'AIzaSyBvBoNpHkNs9NG5gJBlV2mNwyyWJUnsQMs',
   authDomain: 'parroquia-del-carmen.firebaseapp.com',
@@ -12,5 +10,16 @@ const firebaseConfig = {
   appId: '1:1033190868297:web:29e34b9332ec35dba30698',
 };
 
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
-export const db = getFirestore(app);
+let _db: Firestore | null = null;
+
+export const getDb = (): Firestore | null => {
+  try {
+    if (!_db) {
+      const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+      _db = getFirestore(app);
+    }
+    return _db;
+  } catch (e) {
+    return null;
+  }
+};
