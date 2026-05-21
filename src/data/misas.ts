@@ -14,8 +14,6 @@ export const horariosOrdinarios: MasaHorario[] = [
   { dia: 'Domingo',   horarios: ['11:30', '19:30'] },
 ];
 
-export const horariosEspeciales: MasaHorario[] = [];
-
 export const contacto = {
   nombre: 'Parroquia del Carmen (Centro)',
   direccion: 'Rodríguez Peña 840, C1060 CABA',

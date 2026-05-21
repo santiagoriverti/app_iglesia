@@ -9,11 +9,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, radius } from '../constants/theme';
 import { getSantoDelDia } from '../data/santos';
-
-const MESES_ES = [
-  'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
-  'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre',
-];
+import { MESES_ES } from '../constants/locale';
 
 export default function SantoScreen() {
   const hoy = new Date();

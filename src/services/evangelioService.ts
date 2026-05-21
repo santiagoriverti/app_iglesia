@@ -11,17 +11,6 @@ export interface LecturasDiarias {
   evangelio: Lectura;
 }
 
-// Book name mapping: Spanish display name → bible-api.com key
-const libros: Record<string, string> = {
-  Juan: 'john',
-  Marcos: 'mark',
-  Lucas: 'luke',
-  Mateo: 'matthew',
-  Hechos: 'acts',
-  Romanos: 'romans',
-  Corintios: '1+corinthians',
-};
-
 // Simplified lectionary for May–August 2026 (Year B/C)
 interface EntradaLeccionario {
   diaLiturgico: string;
@@ -99,6 +88,8 @@ const leccionario2026: Record<string, EntradaLeccionario> = {
   },
 };
 
+const _cache: Record<string, LecturasDiarias> = {};
+
 const fallbackLectura: LecturasDiarias = {
   diaLiturgico: 'Tiempo Ordinario',
   colorLiturgico: 'verde',
@@ -115,6 +106,7 @@ const fallbackLectura: LecturasDiarias = {
   },
 };
 
+// Uses local date parts (not toISOString) to avoid UTC offset shifting the day in Argentina (UTC-3)
 const getDateKey = (date: Date): string => {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, '0');
@@ -122,33 +114,34 @@ const getDateKey = (date: Date): string => {
   return `${y}-${m}-${d}`;
 };
 
-const fetchTexto = async (apiRef: string): Promise<string> => {
+const fetchTexto = async (apiRef: string, signal?: AbortSignal): Promise<string> => {
   const url = `https://bible-api.com/${encodeURIComponent(apiRef)}?translation=rvr1960`;
-  const res = await fetch(url);
+  const res = await fetch(url, { signal });
   if (!res.ok) throw new Error('API error');
   const data = await res.json();
   return (data.text as string).trim();
 };
 
-export const fetchLecturasHoy = async (): Promise<LecturasDiarias> => {
+export const fetchLecturasHoy = async (signal?: AbortSignal): Promise<LecturasDiarias> => {
   const hoy = new Date();
   const clave = getDateKey(hoy);
+  if (_cache[clave]) return _cache[clave];
+
   const entrada = leccionario2026[clave];
 
   if (!entrada) {
-    // Try a nearby Sunday as fallback
     const claves = Object.keys(leccionario2026);
-    const maCercana = claves.reduce((prev, curr) => {
+    const claveMasCercana = claves.reduce((prev, curr) => {
       const diffPrev = Math.abs(new Date(prev).getTime() - hoy.getTime());
       const diffCurr = Math.abs(new Date(curr).getTime() - hoy.getTime());
       return diffCurr < diffPrev ? curr : prev;
     });
-    const entradaCercana = leccionario2026[maCercana];
+    const entradaCercana = leccionario2026[claveMasCercana];
     if (!entradaCercana) return fallbackLectura;
 
     try {
-      const evangelioTexto = await fetchTexto(entradaCercana.evangelioApiRef);
-      return {
+      const evangelioTexto = await fetchTexto(entradaCercana.evangelioApiRef, signal);
+      const result: LecturasDiarias = {
         diaLiturgico: entradaCercana.diaLiturgico,
         colorLiturgico: entradaCercana.colorLiturgico,
         primeraLectura: {
@@ -162,6 +155,8 @@ export const fetchLecturasHoy = async (): Promise<LecturasDiarias> => {
           texto: evangelioTexto,
         },
       };
+      _cache[clave] = result;
+      return result;
     } catch {
       return fallbackLectura;
     }
@@ -169,30 +164,30 @@ export const fetchLecturasHoy = async (): Promise<LecturasDiarias> => {
 
   try {
     const [evangelioTexto, primeraTexto] = await Promise.allSettled([
-      fetchTexto(entrada.evangelioApiRef),
-      fetchTexto(entrada.primeraApiRef),
+      fetchTexto(entrada.evangelioApiRef, signal),
+      fetchTexto(entrada.primeraApiRef, signal),
     ]);
 
-    return {
+    const result: LecturasDiarias = {
       diaLiturgico: entrada.diaLiturgico,
       colorLiturgico: entrada.colorLiturgico,
       primeraLectura: {
         titulo: 'Primera Lectura',
         referencia: entrada.primeraRef,
-        texto:
-          primeraTexto.status === 'fulfilled'
-            ? primeraTexto.value
-            : 'Consulte el misal para la lectura completa.',
+        texto: primeraTexto.status === 'fulfilled'
+          ? primeraTexto.value
+          : 'Consulte el misal para la lectura completa.',
       },
       evangelio: {
         titulo: entrada.evangelioTitulo,
         referencia: entrada.evangelioRef,
-        texto:
-          evangelioTexto.status === 'fulfilled'
-            ? evangelioTexto.value
-            : fallbackLectura.evangelio.texto,
+        texto: evangelioTexto.status === 'fulfilled'
+          ? evangelioTexto.value
+          : fallbackLectura.evangelio.texto,
       },
     };
+    _cache[clave] = result;
+    return result;
   } catch {
     return fallbackLectura;
   }

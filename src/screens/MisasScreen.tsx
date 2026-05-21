@@ -14,7 +14,7 @@ function FilaHorario({ dia, horarios, nota }: { dia: string; horarios: string[];
         {esDomingo && <Text style={styles.badgePrincipal}>Principal</Text>}
       </View>
       <View style={styles.filaHorarios}>
-        {horarios.map((h) => (
+        {horarios.map(h => (
           <View key={h} style={styles.horarioBadge}>
             <Text style={styles.horarioTexto}>{h}</Text>
           </View>
@@ -26,32 +26,28 @@ function FilaHorario({ dia, horarios, nota }: { dia: string; horarios: string[];
 }
 
 export default function MisasScreen() {
-  const [data, setData] = useState<MisasData>({
-    ordinarios: horariosOrdinarios,
-    contacto,
-  });
+  const [data, setData] = useState<MisasData>({ ordinarios: horariosOrdinarios, contacto });
 
   useEffect(() => {
-    getMisas().then(setData);
+    const controller = new AbortController();
+    getMisas(controller.signal).then(setData);
+    return () => controller.abort();
   }, []);
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-
-      {/* Horarios de Misa */}
       <View style={styles.seccion}>
         <View style={styles.seccionHeader}>
           <Ionicons name="people-outline" size={20} color={colors.primary} />
           <Text style={styles.seccionTitulo}>Horarios de Misa</Text>
         </View>
         <View style={styles.card}>
-          {data.ordinarios.map((h) => (
+          {data.ordinarios.map(h => (
             <FilaHorario key={h.dia} dia={h.dia} horarios={h.horarios} nota={h.nota} />
           ))}
         </View>
       </View>
 
-      {/* Confesiones */}
       <View style={styles.seccion}>
         <View style={styles.seccionHeader}>
           <Ionicons name="shield-checkmark-outline" size={20} color={colors.liturgicalPurple} />
@@ -65,7 +61,6 @@ export default function MisasScreen() {
         </View>
       </View>
 
-      {/* Contacto */}
       <View style={styles.seccion}>
         <View style={styles.seccionHeader}>
           <Ionicons name="location-outline" size={20} color={colors.liturgicalGreen} />
@@ -101,14 +96,8 @@ const styles = StyleSheet.create({
   seccionHeader: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.md },
   seccionTitulo: { fontSize: 16, fontWeight: '700', color: colors.textPrimary },
   card: {
-    backgroundColor: colors.surface,
-    borderRadius: radius.md,
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.07,
-    shadowRadius: 4,
-    elevation: 2,
+    backgroundColor: colors.surface, borderRadius: radius.md, overflow: 'hidden',
+    shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.07, shadowRadius: 4, elevation: 2,
   },
   filaHorario: { padding: spacing.md, borderBottomWidth: 1, borderBottomColor: colors.border },
   filaDestacada: { backgroundColor: colors.primary + '08' },
@@ -116,35 +105,21 @@ const styles = StyleSheet.create({
   diaNombre: { fontSize: 15, fontWeight: '600', color: colors.textSecondary },
   diaDestacado: { color: colors.primary, fontWeight: '700' },
   badgePrincipal: {
-    backgroundColor: colors.primary + '20',
-    color: colors.primary,
-    fontSize: 10,
-    fontWeight: '700',
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 2,
-    borderRadius: 20,
-    overflow: 'hidden',
+    backgroundColor: colors.primary + '20', color: colors.primary, fontSize: 10, fontWeight: '700',
+    paddingHorizontal: spacing.sm, paddingVertical: 2, borderRadius: 20, overflow: 'hidden',
   },
   filaHorarios: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs },
   horarioBadge: {
-    backgroundColor: colors.surfaceAlt,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-    borderRadius: radius.sm,
-    borderWidth: 1,
-    borderColor: colors.border,
+    backgroundColor: colors.surfaceAlt, paddingHorizontal: spacing.sm, paddingVertical: spacing.xs,
+    borderRadius: radius.sm, borderWidth: 1, borderColor: colors.border,
   },
   horarioTexto: { fontSize: 14, fontWeight: '700', color: colors.textPrimary },
   notaTexto: { marginTop: spacing.sm, fontSize: 12, color: colors.textMuted, fontStyle: 'italic' },
   confFila: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.md },
   confTexto: { fontSize: 15, color: colors.textPrimary, fontStyle: 'italic' },
   filaContacto: {
-    flexDirection: 'row',
-    gap: spacing.md,
-    padding: spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    alignItems: 'flex-start',
+    flexDirection: 'row', gap: spacing.md, padding: spacing.md,
+    borderBottomWidth: 1, borderBottomColor: colors.border, alignItems: 'flex-start',
   },
   contactoLabel: { fontSize: 12, color: colors.textMuted, marginBottom: 1 },
   contactoTexto: { fontSize: 14, color: colors.textPrimary },

@@ -11,7 +11,7 @@ import { colors, spacing, radius } from '../constants/theme';
 import { fetchLecturasHoy, LecturasDiarias } from '../services/evangelioService';
 import LoadingView from '../components/LoadingView';
 
-const colorLiturgico: Record<string, string> = {
+const colorLiturgico: Record<LecturasDiarias['colorLiturgico'], string> = {
   rojo: colors.liturgicalRed,
   verde: colors.liturgicalGreen,
   blanco: colors.textMuted,
@@ -19,7 +19,7 @@ const colorLiturgico: Record<string, string> = {
   dorado: colors.liturgicalGold,
 };
 
-const nombreColorLiturgico: Record<string, string> = {
+const nombreColorLiturgico: Record<LecturasDiarias['colorLiturgico'], string> = {
   rojo: 'Rojo',
   verde: 'Verde',
   blanco: 'Blanco',
@@ -33,21 +33,25 @@ export default function EvangelioScreen() {
   const [error, setError] = useState(false);
   const [mostrarPrimera, setMostrarPrimera] = useState(false);
 
-  const cargar = async () => {
+  const cargar = async (signal?: AbortSignal) => {
     setCargando(true);
     setError(false);
     try {
-      const datos = await fetchLecturasHoy();
+      const datos = await fetchLecturasHoy(signal);
+      if (signal?.aborted) return;
       setLecturas(datos);
     } catch {
+      if (signal?.aborted) return;
       setError(true);
     } finally {
-      setCargando(false);
+      if (!signal?.aborted) setCargando(false);
     }
   };
 
   useEffect(() => {
-    cargar();
+    const controller = new AbortController();
+    cargar(controller.signal);
+    return () => controller.abort();
   }, []);
 
   if (cargando) return <LoadingView mensaje="Cargando lecturas del día..." />;
@@ -57,7 +61,7 @@ export default function EvangelioScreen() {
       <View style={styles.centrado}>
         <Ionicons name="wifi-outline" size={48} color={colors.textMuted} />
         <Text style={styles.errorTexto}>No se pudo cargar el evangelio</Text>
-        <TouchableOpacity style={styles.botonReintentar} onPress={cargar}>
+        <TouchableOpacity style={styles.botonReintentar} onPress={() => cargar()}>
           <Text style={styles.botonReintentarTexto}>Reintentar</Text>
         </TouchableOpacity>
       </View>

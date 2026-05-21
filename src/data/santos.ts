@@ -169,10 +169,11 @@ export const getSantoDelDia = (fecha: Date): Santo => {
   const dia = String(fecha.getDate()).padStart(2, '0');
   const clave = `${mes}-${dia}`;
 
+  const MESES_ES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
   return (
     santos[clave] || {
       nombre: 'Santo del Día',
-      fiesta: `${dia} de ${fecha.toLocaleDateString('es-AR', { month: 'long' })}`,
+      fiesta: `${dia} de ${MESES_ES[fecha.getMonth()]}`,
       biografia:
         'La Iglesia celebra hoy la memoria de los santos y beatos que vivieron su fe con fidelidad y son ejemplo para todos los creyentes. Unidos en la comunión de los santos, pedimos su intercesión.',
     }

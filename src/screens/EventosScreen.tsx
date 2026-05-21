@@ -1,14 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, radius } from '../constants/theme';
-import { eventos as localEventos, Evento } from '../data/eventos';
-import { getEventos } from '../services/firestoreService';
-
-const MESES_ES = [
-  'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
-  'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre',
-];
+import { MESES_ES, hoyMedianoche } from '../constants/locale';
+import { Evento } from '../data/eventos';
+import { useEventos } from '../hooks/useEventos';
 
 const coloresTipo: Record<Evento['tipo'], string> = {
   liturgico: colors.primary,
@@ -29,9 +25,7 @@ const etiquetasTipo: Record<Evento['tipo'], string> = {
 function TarjetaEvento({ evento, pasado }: { evento: Evento; pasado: boolean }) {
   const fechaObj = new Date(evento.fecha + 'T00:00:00');
   const colorTipo = coloresTipo[evento.tipo];
-  const hoy = new Date();
-  hoy.setHours(0, 0, 0, 0);
-  const esHoy = fechaObj.getTime() === hoy.getTime();
+  const esHoy = fechaObj.getTime() === hoyMedianoche().getTime();
 
   return (
     <View style={[styles.eventoCard, pasado && styles.eventoCardPasado, evento.destacado && !pasado && styles.eventoCardDestacado]}>
@@ -75,23 +69,20 @@ function TarjetaEvento({ evento, pasado }: { evento: Evento; pasado: boolean }) 
 }
 
 export default function EventosScreen() {
-  const [listaEventos, setListaEventos] = useState<Evento[]>(localEventos);
+  const listaEventos = useEventos();
   const [mostrarPasados, setMostrarPasados] = useState(false);
 
-  useEffect(() => {
-    getEventos().then(setListaEventos);
-  }, []);
-
-  const hoy = new Date();
-  hoy.setHours(0, 0, 0, 0);
-
-  const proximos = listaEventos
-    .filter(e => new Date(e.fecha + 'T00:00:00') >= hoy)
-    .sort((a, b) => a.fecha.localeCompare(b.fecha));
-
-  const pasados = listaEventos
-    .filter(e => new Date(e.fecha + 'T00:00:00') < hoy)
-    .sort((a, b) => b.fecha.localeCompare(a.fecha));
+  const { proximos, pasados } = useMemo(() => {
+    const hoy = hoyMedianoche();
+    return {
+      proximos: listaEventos
+        .filter(e => new Date(e.fecha + 'T00:00:00') >= hoy)
+        .sort((a, b) => a.fecha.localeCompare(b.fecha)),
+      pasados: listaEventos
+        .filter(e => new Date(e.fecha + 'T00:00:00') < hoy)
+        .sort((a, b) => b.fecha.localeCompare(a.fecha)),
+    };
+  }, [listaEventos]);
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
@@ -142,14 +133,8 @@ const styles = StyleSheet.create({
   encabezadoSub: { fontSize: 12, color: colors.textMuted },
   lista: { paddingHorizontal: spacing.md, gap: spacing.sm },
   eventoCard: {
-    backgroundColor: colors.surface,
-    borderRadius: radius.md,
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.07,
-    shadowRadius: 4,
-    elevation: 2,
+    backgroundColor: colors.surface, borderRadius: radius.md, overflow: 'hidden',
+    shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.07, shadowRadius: 4, elevation: 2,
   },
   eventoCardPasado: { opacity: 0.65, elevation: 0, shadowOpacity: 0 },
   eventoCardDestacado: { shadowOpacity: 0.12, shadowRadius: 6, elevation: 4 },
@@ -173,8 +158,7 @@ const styles = StyleSheet.create({
   togglePasados: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     gap: spacing.xs, margin: spacing.md, padding: spacing.md,
-    backgroundColor: colors.surface, borderRadius: radius.md,
-    borderWidth: 1, borderColor: colors.border,
+    backgroundColor: colors.surface, borderRadius: radius.md, borderWidth: 1, borderColor: colors.border,
   },
   toggleTexto: { color: colors.textMuted, fontSize: 14 },
   vacio: { alignItems: 'center', padding: spacing.xl * 2, gap: spacing.sm },
