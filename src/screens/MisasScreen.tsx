@@ -2,12 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, radius } from '../constants/theme';
-import {
-  horariosOrdinarios,
-  horariosEspeciales,
-  confesiones,
-  contacto,
-} from '../data/misas';
+import { horariosOrdinarios, contacto } from '../data/misas';
 
 function FilaHorario({ dia, horarios, nota }: { dia: string; horarios: string[]; nota?: string }) {
   const esDomingo = dia === 'Domingo';
@@ -32,29 +27,15 @@ function FilaHorario({ dia, horarios, nota }: { dia: string; horarios: string[];
 export default function MisasScreen() {
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      {/* Misas ordinarias */}
+
+      {/* Misas semanales */}
       <View style={styles.seccion}>
         <View style={styles.seccionHeader}>
           <Ionicons name="people-outline" size={20} color={colors.primary} />
-          <Text style={styles.seccionTitulo}>Misas Semanales</Text>
+          <Text style={styles.seccionTitulo}>Horarios de Misa</Text>
         </View>
         <View style={styles.card}>
           {horariosOrdinarios.map((h) => (
-            <React.Fragment key={h.dia}>
-              <FilaHorario dia={h.dia} horarios={h.horarios} nota={h.nota} />
-            </React.Fragment>
-          ))}
-        </View>
-      </View>
-
-      {/* Misas especiales */}
-      <View style={styles.seccion}>
-        <View style={styles.seccionHeader}>
-          <Ionicons name="star-outline" size={20} color={colors.accent} />
-          <Text style={styles.seccionTitulo}>Misas Especiales</Text>
-        </View>
-        <View style={styles.card}>
-          {horariosEspeciales.map((h) => (
             <FilaHorario key={h.dia} dia={h.dia} horarios={h.horarios} nota={h.nota} />
           ))}
         </View>
@@ -67,20 +48,9 @@ export default function MisasScreen() {
           <Text style={styles.seccionTitulo}>Sacramento de la Confesión</Text>
         </View>
         <View style={styles.card}>
-          {confesiones.map((c) => (
-            <View key={c.dias} style={styles.filaConf}>
-              <Ionicons name="time-outline" size={16} color={colors.textMuted} />
-              <View style={{ flex: 1 }}>
-                <Text style={styles.confDia}>{c.dias}</Text>
-                <Text style={styles.confHorario}>{c.horario}</Text>
-              </View>
-            </View>
-          ))}
-          <View style={styles.avisoConf}>
-            <Ionicons name="information-circle-outline" size={16} color={colors.primary} />
-            <Text style={styles.avisoTexto}>
-              Ante cualquier urgencia espiritual, comuníquese con la secretaría parroquial.
-            </Text>
+          <View style={styles.confFila}>
+            <Ionicons name="time-outline" size={18} color={colors.textMuted} />
+            <Text style={styles.confTexto}>30 minutos antes de cada Misa</Text>
           </View>
         </View>
       </View>
@@ -97,12 +67,8 @@ export default function MisasScreen() {
             <Text style={styles.contactoTexto}>{contacto.direccion}</Text>
           </View>
           <View style={styles.filaContacto}>
-            <Ionicons name="call-outline" size={18} color={colors.textMuted} />
-            <Text style={styles.contactoTexto}>{contacto.telefono}</Text>
-          </View>
-          <View style={styles.filaContacto}>
-            <Ionicons name="mail-outline" size={18} color={colors.textMuted} />
-            <Text style={styles.contactoTexto}>{contacto.email}</Text>
+            <Ionicons name="logo-instagram" size={18} color={colors.textMuted} />
+            <Text style={styles.contactoTexto}>{contacto.instagram}</Text>
           </View>
           <View style={[styles.filaContacto, { borderBottomWidth: 0 }]}>
             <Ionicons name="business-outline" size={18} color={colors.textMuted} />
@@ -206,37 +172,16 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
     fontStyle: 'italic',
   },
-  filaConf: {
+  confFila: {
     flexDirection: 'row',
+    alignItems: 'center',
     gap: spacing.md,
     padding: spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    alignItems: 'flex-start',
   },
-  confDia: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.textSecondary,
-  },
-  confHorario: {
-    fontSize: 14,
+  confTexto: {
+    fontSize: 15,
     color: colors.textPrimary,
-    marginTop: 2,
-  },
-  avisoConf: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    padding: spacing.md,
-    alignItems: 'flex-start',
-    backgroundColor: colors.primary + '08',
-  },
-  avisoTexto: {
-    flex: 1,
-    fontSize: 13,
-    color: colors.primary,
     fontStyle: 'italic',
-    lineHeight: 18,
   },
   filaContacto: {
     flexDirection: 'row',

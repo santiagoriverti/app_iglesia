@@ -70,7 +70,7 @@ export default function HomeScreen() {
       <View style={styles.header}>
         <Ionicons name="add" size={0} />
         <Text style={styles.headerLabel}>✝  PARROQUIA</Text>
-        <Text style={styles.headerNombre}>Nuestra Señora{'\n'}del Carmen</Text>
+        <Text style={styles.headerNombre}>Parroquia del Carmen{'\n'}(Centro)</Text>
         <Text style={styles.headerFecha}>{formatearFecha(new Date())}</Text>
       </View>
 
