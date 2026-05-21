@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "app_iglesia",
+    "name": "Ntra. Sra. del Carmen",
     "slug": "app_iglesia",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -11,7 +11,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#4A1E24",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
